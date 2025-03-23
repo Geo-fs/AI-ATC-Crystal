@@ -1,0 +1,104 @@
+// AI ATC Logic for Geo-FS with modifications
+(function() {
+    class AI_ATC {
+        constructor() {
+            this.mode = 'enroute'; // Default ATC mode
+            this.debug = false;
+            this.initATCBox();
+        }
+
+        initATCBox() {
+            this.atcBox = document.createElement("div");
+            this.atcBox.id = "atc-messages";
+            this.atcBox.style.position = "absolute";
+            this.atcBox.style.top = "50px";
+            this.atcBox.style.right = "10px";
+            this.atcBox.style.width = "300px";
+            this.atcBox.style.height = "200px";
+            this.atcBox.style.overflowY = "auto";
+            this.atcBox.style.background = "rgba(0, 0, 0, 0.7)";
+            this.atcBox.style.color = "white";
+            this.atcBox.style.padding = "10px";
+            this.atcBox.style.borderRadius = "5px";
+            document.body.appendChild(this.atcBox);
+        }
+
+        logMessage(message) {
+            const msgElement = document.createElement("p");
+            msgElement.textContent = message;
+            this.atcBox.appendChild(msgElement);
+            this.atcBox.scrollTop = this.atcBox.scrollHeight;
+        }
+
+        handleUserMessage(message) {
+            if (message.toLowerCase() === "debug") {
+                this.debug = !this.debug;
+                this.logMessage(`Debug mode ${this.debug ? "enabled" : "disabled"}`);
+                return;
+            }
+            if (message.toLowerCase().includes("emergency")) {
+                this.handleEmergency();
+                return;
+            }
+            this.logMessage(`User: ${message}`);
+            this.processATCLogic(message);
+        }
+
+        handleEmergency() {
+            this.logMessage("ATC: Emergency declared! Diverting to nearest airport.");
+            // Additional logic to find nearest airport
+        }
+
+        detectTrafficConflict() {
+            // Simulated function to detect traffic conflicts on runways or taxiways
+            const conflict = Math.random() < 0.3; // Simulate a 30% chance of conflict
+            if (conflict) {
+                this.logMessage("ATC: Traffic detected ahead, altering course.");
+            }
+        }
+
+        processATCLogic(userInput) {
+            switch (this.mode) {
+                case 'ground':
+                    this.logMessage("ATC: Taxi to runway 27L.");
+                    break;
+                case 'departure':
+                    this.logMessage("ATC: Cleared for takeoff, climb to FL100.");
+                    break;
+                case 'approach':
+                    this.logMessage("ATC: Descend to 3000 feet, cleared for ILS approach.");
+                    break;
+                case 'enroute':
+                default:
+                    this.logMessage("ATC: Maintain heading 270, expect further clearance in 10 minutes.");
+                    break;
+            }
+        }
+
+        toggleATCMode() {
+            const modes = ['ground', 'departure', 'approach', 'enroute'];
+            this.mode = modes[(modes.indexOf(this.mode) + 1) % modes.length];
+            this.logMessage(`ATC mode switched to: ${this.mode}`);
+        }
+    }
+
+    const atcAI = new AI_ATC();
+
+    // Handle input from c-textbox
+    document.getElementById('c-textbox')?.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            atcAI.handleUserMessage(event.target.value);
+            event.target.value = '';
+        }
+    });
+
+    // Add ATC mode toggle button
+    const atcToggle = document.createElement("button");
+    atcToggle.textContent = "⛟";
+    atcToggle.style.position = "absolute";
+    atcToggle.style.right = "50px";
+    atcToggle.style.bottom = "50px";
+    atcToggle.style.fontSize = "20px";
+    atcToggle.onclick = () => atcAI.toggleATCMode();
+    document.body.appendChild(atcToggle);
+})();
